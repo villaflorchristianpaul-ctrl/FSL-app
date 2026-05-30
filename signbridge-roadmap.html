@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SignBridge+ Build Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --card: #151d2e;
+    --border: #1e2d45;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --done: #10b981;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -200px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; }
+
+  header { text-align: center; margin-bottom: 3rem; }
+  .logo { font-size: 0.75rem; letter-spacing: 0.3em; color: var(--accent); text-transform: uppercase; font-family: 'Space Mono', monospace; margin-bottom: 0.75rem; }
+  h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.1; }
+  h1 span { color: var(--accent); }
+  .subtitle { color: var(--muted); margin-top: 0.75rem; font-size: 1rem; font-family: 'Space Mono', monospace; }
+
+  .progress-bar-wrap { background: var(--border); border-radius: 999px; height: 6px; margin: 2rem 0 0.5rem; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 999px; transition: width 0.5s ease; }
+  .progress-label { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--muted); text-align: right; }
+
+  .phases { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2.5rem; }
+
+  .phase {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .phase:hover { border-color: rgba(0,229,255,0.25); box-shadow: 0 0 30px rgba(0,229,255,0.05); }
+  .phase.done { border-color: rgba(16,185,129,0.3); }
+  .phase.active { border-color: rgba(0,229,255,0.4); box-shadow: 0 0 30px rgba(0,229,255,0.08); }
+
+  .phase-header {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .phase-num {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: 700;
+    flex-shrink: 0;
+    background: var(--border);
+    color: var(--muted);
+    transition: background 0.3s, color 0.3s;
+  }
+  .phase.done .phase-num { background: rgba(16,185,129,0.15); color: var(--done); }
+  .phase.active .phase-num { background: rgba(0,229,255,0.15); color: var(--accent); }
+
+  .phase-title-wrap { flex: 1; }
+  .phase-tag { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .phase-title { font-size: 1.05rem; font-weight: 600; margin-top: 0.1rem; }
+
+  .phase-status {
+    font-family: 'Space Mono', monospace; font-size: 0.7rem;
+    padding: 0.25rem 0.7rem; border-radius: 999px;
+    background: var(--border); color: var(--muted);
+    white-space: nowrap;
+  }
+  .phase.done .phase-status { background: rgba(16,185,129,0.12); color: var(--done); }
+  .phase.active .phase-status { background: rgba(0,229,255,0.12); color: var(--accent); }
+
+  .phase-chevron { color: var(--muted); transition: transform 0.3s; font-size: 1rem; }
+  .phase.open .phase-chevron { transform: rotate(180deg); }
+
+  .phase-body { display: none; padding: 0 1.5rem 1.5rem; }
+  .phase.open .phase-body { display: block; }
+
+  .phase-desc { color: var(--muted); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.25rem; border-left: 2px solid var(--border); padding-left: 1rem; }
+  .phase.active .phase-desc { border-color: var(--accent); }
+
+  .tasks { display: flex; flex-direction: column; gap: 0.6rem; }
+  .task {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    background: var(--surface); border-radius: 10px;
+    padding: 0.75rem 1rem;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .task:hover { border-color: var(--border); }
+  .task.checked { background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.2); }
+
+  .task-cb {
+    width: 18px; height: 18px; border-radius: 5px;
+    border: 2px solid var(--border);
+    flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, border-color 0.2s;
+    font-size: 0.7rem;
+  }
+  .task.checked .task-cb { background: var(--done); border-color: var(--done); color: #fff; }
+
+  .task-text { font-size: 0.9rem; line-height: 1.5; }
+  .task.checked .task-text { color: var(--muted); text-decoration: line-through; }
+
+  .task-badge {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 0.62rem; font-family: 'Space Mono', monospace;
+    padding: 0.15rem 0.5rem; border-radius: 999px;
+    background: var(--border); color: var(--muted);
+    white-space: nowrap; align-self: center;
+  }
+  .task-badge.py { background: rgba(245,158,11,0.12); color: var(--warn); }
+  .task-badge.ai { background: rgba(124,58,237,0.15); color: #a78bfa; }
+  .task-badge.ui { background: rgba(0,229,255,0.1); color: var(--accent); }
+  .task-badge.test { background: rgba(16,185,129,0.1); color: var(--done); }
+
+  .tools-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+  .tool-chip {
+    font-size: 0.7rem; font-family: 'Space Mono', monospace;
+    padding: 0.25rem 0.65rem; border-radius: 999px;
+    background: var(--border); color: var(--accent);
+    border: 1px solid rgba(0,229,255,0.15);
+  }
+
+  .cta-box {
+    margin-top: 3rem;
+    background: linear-gradient(135deg, rgba(0,229,255,0.07), rgba(124,58,237,0.07));
+    border: 1px solid rgba(0,229,255,0.2);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+  }
+  .cta-box h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .cta-box p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+  .cta-box .highlight { color: var(--accent); font-weight: 600; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; margin-right: 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <div class="logo">Build Guide</div>
+    <h1>SignBridge<span>+</span> Roadmap</h1>
+    <p class="subtitle">Filipino Sign Language Translation System</p>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">0 / 0 tasks complete</div>
+  </header>
+
+  <div class="phases" id="phases">
+
+    <!-- PHASE 1 -->
+    <div class="phase active open" data-phase="1">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-num">01</div>
+        <div class="phase-title-wrap">
+          <div class="phase-tag">Phase 1 · Start Here</div>
+          <div class="phase-title">Project Setup & Environment</div>
+        </div>
+        <div class="phase-status"><span class="live-dot"></span>Current</div>
+        <div class="phase-chevron">▼</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-desc">Set up your dev environment with all the tools you'll need. This is the foundation everything else builds on.</div>
+        <div class="tasks">
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Install Python 3.10+ and pip</div><span class="task-badge py">Python</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Install VS Code + Python extension</div><span class="task-badge ui">IDE</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Set up a virtual environment (venv)</div><span class="task-badge py">Python</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Install core libraries: OpenCV, MediaPipe, NumPy, TensorFlow/Keras</div><span class="task-badge ai">AI/ML</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Create a GitHub repo for your project</div><span class="task-badge">Git</span></div>
+        </div>
+        <div class="tools-row">
+          <span class="tool-chip">Python 3.10+</span>
+          <span class="tool-chip">OpenCV</span>
+          <span class="tool-chip">MediaPipe</span>
+          <span class="tool-chip">TensorFlow</span>
+          <span class="tool-chip">VS Code</span>
+          <span class="tool-chip">Git</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="phase" data-phase="2">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-num">02</div>
+        <div class="phase-title-wrap">
+          <div class="phase-tag">Phase 2 · Computer Vision</div>
+          <div class="phase-title">Hand & Body Detection</div>
+        </div>
+        <div class="phase-status">Upcoming</div>
+        <div class="phase-chevron">▼</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-desc">Use MediaPipe to detect hands, face landmarks, and body pose in real-time from your webcam. This is your "eyes" for reading FSL.</div>
+        <div class="tasks">
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Build a webcam feed using OpenCV</div><span class="task-badge py">Python</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Integrate MediaPipe Hands to detect 21 hand landmarks</div><span class="task-badge ai">AI/ML</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Integrate MediaPipe Face Mesh for facial expressions</div><span class="task-badge ai">AI/ML</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Integrate MediaPipe Pose for body posture</div><span class="task-badge ai">AI/ML</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Draw skeleton overlays on live video feed</div><span class="task-badge ui">UI</span></div>
+        </div>
+        <div class="tools-row">
+          <span class="tool-chip">MediaPipe</span>
+          <span class="tool-chip">OpenCV</span>
+          <span class="tool-chip">NumPy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="phase" data-phase="3">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-num">03</div>
+        <div class="phase-title-wrap">
+          <div class="phase-tag">Phase 3 · Dataset</div>
+          <div class="phase-title">FSL Data Collection</div>
+        </div>
+        <div class="phase-status">Upcoming</div>
+        <div class="phase-chevron">▼</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-desc">Collect or prepare FSL gesture data. Good data = good model. Start with a small vocabulary (e.g. 20–30 signs) and expand from there.</div>
+        <div class="tasks">
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Define a target vocabulary of FSL signs (start small: 20–30 words)</div><span class="task-badge">Research</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Write a data capture script that saves landmark keypoints per frame</div><span class="task-badge py">Python</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Record 30+ video samples per FSL sign (different people if possible)</div><span class="task-badge">Data</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Label and organize dataset into folders per sign class</div><span class="task-badge">Data</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Export data as NumPy arrays for model training</div><span class="task-badge py">Python</span></div>
+        </div>
+        <div class="tools-row">
+          <span class="tool-chip">OpenCV</span>
+          <span class="tool-chip">NumPy</span>
+          <span class="tool-chip">MediaPipe</span>
+          <span class="tool-chip">CSV / JSON</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="phase" data-phase="4">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-num">04</div>
+        <div class="phase-title-wrap">
+          <div class="phase-tag">Phase 4 · Machine Learning</div>
+          <div class="phase-title">Train the Gesture Classifier</div>
+        </div>
+        <div class="phase-status">Upcoming</div>
+        <div class="phase-chevron">▼</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-desc">Train a neural network (LSTM or CNN) to classify FSL gestures from the landmark sequences you captured. This is the brain of your system.</div>
+        <div class="tasks">
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Build an LSTM model in Keras for sequence classification</div><span class="task-badge ai">AI/ML</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Split data into train/validation/test sets (80/10/10)</div><span class="task-badge ai">AI/ML</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Train the model and monitor accuracy + loss curves</div><span class="task-badge ai">AI/ML</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Evaluate with confusion matrix and accuracy formula</div><span class="task-badge test">Testing</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Save model as .h5 or .keras file for deployment</div><span class="task-badge ai">AI/ML</span></div>
+        </div>
+        <div class="tools-row">
+          <span class="tool-chip">TensorFlow / Keras</span>
+          <span class="tool-chip">LSTM</span>
+          <span class="tool-chip">Matplotlib</span>
+          <span class="tool-chip">scikit-learn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="phase" data-phase="5">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-num">05</div>
+        <div class="phase-title-wrap">
+          <div class="phase-tag">Phase 5 · NLP & Speech</div>
+          <div class="phase-title">Context-Aware Translation + Speech</div>
+        </div>
+        <div class="phase-status">Upcoming</div>
+        <div class="phase-chevron">▼</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-desc">Turn recognized sign sequences into natural language, and add speech-to-text for the hearing-to-deaf direction.</div>
+        <div class="tasks">
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Build a sentence buffer to accumulate sign predictions into phrases</div><span class="task-badge py">Python</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Integrate SpeechRecognition library for mic-to-text (hearing → Deaf)</div><span class="task-badge ai">AI/ML</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Add text-to-speech output using pyttsx3 or gTTS</div><span class="task-badge ai">AI/ML</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">(Optional) Use a language model API for natural sentence smoothing</div><span class="task-badge ai">AI/ML</span></div>
+        </div>
+        <div class="tools-row">
+          <span class="tool-chip">SpeechRecognition</span>
+          <span class="tool-chip">pyttsx3 / gTTS</span>
+          <span class="tool-chip">NLP</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 6 -->
+    <div class="phase" data-phase="6">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-num">06</div>
+        <div class="phase-title-wrap">
+          <div class="phase-tag">Phase 6 · Interface</div>
+          <div class="phase-title">Build the GUI</div>
+        </div>
+        <div class="phase-status">Upcoming</div>
+        <div class="phase-chevron">▼</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-desc">Wrap everything in a clean, accessible interface. You can use Tkinter for desktop or a web front-end with Flask/Streamlit.</div>
+        <div class="tasks">
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Choose your UI framework: Tkinter, PyQt, or Streamlit</div><span class="task-badge ui">UI</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Display live webcam feed inside the app</div><span class="task-badge ui">UI</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Show real-time translation text output on screen</div><span class="task-badge ui">UI</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Add mode toggle: FSL → Text and Speech → Text</div><span class="task-badge ui">UI</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Design an accessible, clean layout</div><span class="task-badge ui">UI</span></div>
+        </div>
+        <div class="tools-row">
+          <span class="tool-chip">Tkinter / PyQt</span>
+          <span class="tool-chip">Streamlit</span>
+          <span class="tool-chip">PIL / OpenCV</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHASE 7 -->
+    <div class="phase" data-phase="7">
+      <div class="phase-header" onclick="togglePhase(this)">
+        <div class="phase-num">07</div>
+        <div class="phase-title-wrap">
+          <div class="phase-tag">Phase 7 · Testing</div>
+          <div class="phase-title">Evaluate & Optimize</div>
+        </div>
+        <div class="phase-status">Upcoming</div>
+        <div class="phase-chevron">▼</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-desc">Run the statistical tests from your proposal: accuracy formula, paired t-tests, and Likert scale surveys with real users.</div>
+        <div class="tasks">
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Run system with Deaf community members and collect accuracy data</div><span class="task-badge test">Testing</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Calculate accuracy using TP/TN/FP/FN confusion matrix</div><span class="task-badge test">Testing</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Conduct 5-point Likert scale satisfaction survey</div><span class="task-badge test">Testing</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Run paired-sample t-test on translation speed before/after optimization</div><span class="task-badge test">Testing</span></div>
+          <div class="task" onclick="toggleTask(this)"><div class="task-cb">✓</div><div class="task-text">Document results and finalize research paper</div><span class="task-badge">Docs</span></div>
+        </div>
+        <div class="tools-row">
+          <span class="tool-chip">scikit-learn</span>
+          <span class="tool-chip">pandas</span>
+          <span class="tool-chip">Google Forms</span>
+          <span class="tool-chip">SciPy</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /phases -->
+
+  <div class="cta-box">
+    <h2>Ready to start coding? 🚀</h2>
+    <p>Tell me <span class="highlight">"let's build Phase 1"</span> and I'll generate the actual code for each step with you — one task at a time.</p>
+  </div>
+
+</div>
+
+<script>
+  function togglePhase(headerEl) {
+    const phase = headerEl.closest('.phase');
+    phase.classList.toggle('open');
+  }
+
+  function toggleTask(taskEl) {
+    taskEl.classList.toggle('checked');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const all = document.querySelectorAll('.task');
+    const done = document.querySelectorAll('.task.checked');
+    const pct = all.length ? Math.round((done.length / all.length) * 100) : 0;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = done.length + ' / ' + all.length + ' tasks complete';
+
+    // Auto-mark phases done/active
+    document.querySelectorAll('.phase').forEach(phase => {
+      const tasks = phase.querySelectorAll('.task');
+      const checkedTasks = phase.querySelectorAll('.task.checked');
+      const statusEl = phase.querySelector('.phase-status');
+      phase.classList.remove('done', 'active');
+      if (tasks.length > 0 && checkedTasks.length === tasks.length) {
+        phase.classList.add('done');
+        statusEl.innerHTML = '✓ Done';
+      } else if (checkedTasks.length > 0) {
+        phase.classList.add('active');
+        statusEl.innerHTML = '<span class="live-dot"></span>In Progress';
+      }
+    });
+  }
+
+  updateProgress();
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Python
+backend/venv/
+backend/venv_broken/
+backend/__pycache__/
+backend/.env
+*.pyc
+
+# Node / Expo
+SignBridgeApp/node_modules/
+SignBridgeApp/.expo/
+SignBridgeApp/.env
+
+# Local build output
+SignBridgeApp/dist/
+SignBridgeApp/web-build/
+SignBridgeApp/.gradle/
+SignBridgeApp/android/.gradle/
+SignBridgeApp/android/app/.cxx/
+
+# OS/editor
+.DS_Store
+Thumbs.db
