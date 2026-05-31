@@ -21,7 +21,7 @@ MODEL_PATH = "/app/models/signbridge_model_v2.h5"
 if not os.path.exists(MODEL_PATH):
     os.makedirs("/app/models", exist_ok=True)
     gdown.download(
-        "https://drive.google.com/uc?id=1oe5u0T3nhRQPfi72nhV1exEjlbp8kqPb",
+        "https://drive.google.com/uc?id=1zh5R0GXlR96OUSOw-ujnCrl_Zpl2Qrl4",
         MODEL_PATH,
         quiet=False
     )
