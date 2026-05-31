@@ -4,13 +4,16 @@ Keep this file imported by collection, training, and testing so labels stay alig
 """
 
 SIGNS = [
-    'a', 'b', 'c', 'd', 'i', 'j', 'z'
+    'a', 'b', 'c', 'd', 'i', 'j', 'z', 'Ako', 'Ikaw',
+    'Magandang umaga', 'Magandang tanghali', 'Oo', 'Hindi',
+    'Salamat po', 'Walang anuman', 'Estudyante', 'Guro', 'Klase',
+    'Mag-aaral', 'Magbabasa'
 ]
 
 # Signs that are usually static. You can edit this after observing your own FSL dataset.
 # In many sign-language alphabets, J and Z are dynamic, so they are excluded here.
 STATIC_SIGNS = [
-    'a', 'b', 'c', 'd', 'i'
+    'a', 'b', 'c', 'd', 'i', 'Ako', 'Ikaw'
 ]
 
 DYNAMIC_SIGNS = [sign for sign in SIGNS if sign not in STATIC_SIGNS]
